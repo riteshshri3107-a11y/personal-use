@@ -3,15 +3,16 @@
 ## Root Cause
 
 During CR-014 Phase 17, a global find-and-replace changed `#8b5cf6` to `${t.gradientEnd}`
-across 52 files. In all 50 TSX page/component files, `t` is `useThemeStore()`:
+across 52 files.
 
-```tsx
-const t = useThemeStore()
-```
+**49 files are fine**: They use `const { t, ... } = useTheme()` where `t` is the theme
+tokens object. Since `lib/theme.ts` defines `gradientEnd`, these resolve correctly.
 
-The problem: `gradientEnd` was added to `lib/theme.ts` (`getThemeTokens()` function) but
-**never added to the Zustand store** in `store/useThemeStore.ts`. So `t.accent` works fine
-but `t.gradientEnd` is `undefined` — and in some compiled scopes causes a `ReferenceError`.
+**3 files are broken** and cause the runtime crash:
+
+1. **`app/auth/callback/page.tsx`** — No `useTheme` import. `t` is undefined → `ReferenceError`
+2. **`tests/e2e.test.js`** — Test file, `t` not in scope → test failures
+3. **`tests/e2e-report-2026-03-24.json`** — JSON file, `${t.gradientEnd}` is a literal string
 
 ## Affected Files (52 total)
 

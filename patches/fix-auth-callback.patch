@@ -1,0 +1,26 @@
+--- Fix for app/auth/callback/page.tsx ---
+This is the PRIMARY crash file. It has ${t.gradientEnd} but does NOT import useTheme,
+so `t` is undefined at runtime causing the ReferenceError.
+
+TWO OPTIONS:
+
+=== Option A: Add useTheme import (preferred - keeps dynamic theming) ===
+
+Add at the top of the file with other imports:
++import { useTheme } from '@/lib/theme'
+
+Add inside the component function, before the return:
++const { t } = useTheme()
+
+=== Option B: Revert to hardcoded value (quick fix) ===
+
+Find and replace in this file only:
+  ${t.gradientEnd}  →  #8b5cf6
+
+--- Fix for tests/e2e.test.js ---
+Replace t.gradientEnd references with the literal '#8b5cf6' since tests
+don't have access to the React theme hook.
+
+--- Fix for tests/e2e-report-2026-03-24.json ---
+This file will auto-regenerate after fixing the code and re-running tests.
+No manual fix needed.
